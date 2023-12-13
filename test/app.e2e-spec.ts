@@ -3,6 +3,7 @@ import * as pactum from 'pactum';
 import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
+import { SignUpDto } from 'src/auth/dto';
 
 describe('App e2e', () => {
   let app: INestApplication;
@@ -18,6 +19,7 @@ describe('App e2e', () => {
       }),
     );
     await app.init();
+    await app.listen(3000);
 
     prisma = app.get(PrismaService);
 
@@ -30,7 +32,19 @@ describe('App e2e', () => {
 
   describe('Auth', () => {
     describe('SignUp', () => {
-      it.todo('should signup');
+      it('should signup', () => {
+        const dto: SignUpDto = {
+          email: 'email@abc.com',
+          password: 'pass1',
+          firstName: 'firstName',
+          lastName: 'lastName',
+        };
+        return pactum
+          .spec()
+          .post('http:/localhost:3000/auth/signup')
+          .withBody(dto)
+          .expectStatus(201);
+      });
     });
 
     describe('SignIn', () => {
