@@ -1,4 +1,5 @@
 import { Test } from '@nestjs/testing';
+import * as pactum from 'pactum';
 import { AppModule } from '../src/app.module';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import { PrismaService } from '../src/prisma/prisma.service';
@@ -26,5 +27,18 @@ describe('App e2e', () => {
   afterAll(() => {
     app.close();
   });
-  it.todo('should pass');
+
+  describe('Auth', () => {
+    describe('SignUp', () => {
+      it.todo('should signup');
+    });
+
+    describe('SignIn', () => {
+      it.todo('should signup');
+    });
+  });
+
+  describe('User', () => {
+    describe('Get me', () => {});
+  });
 });
