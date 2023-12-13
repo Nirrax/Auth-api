@@ -2,6 +2,7 @@ import { Test } from '@nestjs/testing';
 import { AppModule } from '../../../app.module';
 import { PrismaService } from '../../../prisma/prisma.service';
 import { AuthService } from 'src/auth/auth.service';
+import * as argon from 'argon2';
 
 describe('AuthService Int', () => {
   let prisma: PrismaService;
@@ -16,30 +17,13 @@ describe('AuthService Int', () => {
     await prisma.cleanDb();
   });
 
-  describe('signup', () => {
-    it('should create user', async () => {
-      const user = await prisma.user.create({
-        data: {
-          email: 'email@wp.pl',
-          passwordHash: 'pass1',
-          firstName: 'firstName',
-          lastName: 'lastName',
-        },
-      });
-      expect(user.email).toBe('email@wp.pl');
-      expect(user.passwordHash).toBe('pass1');
-      expect(user.firstName).toBe('firstName');
-      expect(user.lastName).toBe('lastName');
-    });
-  });
-
   describe('signin', () => {
     let userEmail: string;
     it('should create user', async () => {
       const user = await prisma.user.create({
         data: {
           email: 'email2@wp.pl',
-          passwordHash: 'pass1',
+          passwordHash: await argon.hash('pass1'),
           firstName: 'firstName',
           lastName: 'lastName',
         },
@@ -54,6 +38,28 @@ describe('AuthService Int', () => {
       });
       const token = await authService.signToken(user.id, user.email);
       expect(typeof token.access_token).toBe('string');
+    });
+
+    it('should match the passwords', async () => {
+      const password = 'pass1';
+      const user = await prisma.user.findUnique({
+        where: {
+          email: userEmail,
+        },
+      });
+      const passwordMatch = await argon.verify(user.passwordHash, password);
+      expect(passwordMatch).toBe(true);
+    });
+
+    it('should throw error if password does not match', async () => {
+      const password = 'pass2';
+      const user = await prisma.user.findUnique({
+        where: {
+          email: userEmail,
+        },
+      });
+      const passwordMatch = await argon.verify(user.passwordHash, password);
+      expect(passwordMatch).toBe(false);
     });
   });
 });
