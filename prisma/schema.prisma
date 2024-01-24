@@ -18,8 +18,24 @@ model User {
   email        String @unique
   passwordHash String
 
-  firstName String
-  lastName  String
+  firstName      String
+  lastName       String
+  Classification Classification[]
 
   @@map("users")
+}
+
+model Classification {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  fileName          String
+  genre             String
+  genreDistribution Json
+  genreSequence     String[]
+
+  userId Int
+  user   User @relation(fields: [userId], references: [id])
+
+  @@map("classifications")
 }
