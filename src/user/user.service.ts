@@ -8,7 +8,7 @@ export class UserService {
   async getUser(req: any) {
     const user = await this.prisma.user.findUnique({
       where: {
-        id: req.user.sub,
+        id: req.sub,
       },
     });
     delete user.passwordHash;
