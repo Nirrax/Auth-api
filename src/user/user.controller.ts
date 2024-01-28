@@ -11,6 +11,6 @@ export class UserController {
   @UseGuards(JwtGuard)
   @Get('me')
   getMe(@GetUser() user: User) {
-    return this.userService.getUser(user);
+    return user;
   }
 }
