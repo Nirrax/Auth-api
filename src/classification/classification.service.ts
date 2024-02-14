@@ -3,6 +3,7 @@ import { ForbiddenException, Injectable } from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
+import { ClassificationDto, ResponseDto } from './dto';
 
 @Injectable()
 export class ClassificationService {
@@ -28,20 +29,32 @@ export class ClassificationService {
     });
   }
 
-  async classify(user: User, base64Data: string) {
+  async downloadMp3(fileName: string) {
+    const url = `http://localhost:8000/download/${fileName}`;
+    return { url: url };
+  }
+
+  async classify(user: User, dto: ClassificationDto) {
     // send request to microservice
-    const response = await this.sendRequest(base64Data);
+    const response = await this.sendPostRequest(dto.base64Data, dto.fileName);
+
+    const responseData = response.data;
 
     // save classification to the database
-    const classification = await this.SaveClassificationToDb(user, response);
+    const classification = await this.SaveClassificationToDb(
+      user,
+      dto.fileName,
+      responseData,
+    );
 
     return classification;
   }
 
-  async sendRequest(base64Data: string) {
+  async sendPostRequest(base64Data: string, fileName: string) {
     try {
+      const body = { base64Data: base64Data, fileName: fileName };
       const response = await this.httpService
-        .post('http://127.0.0.1:8000', base64Data)
+        .post('http://127.0.0.1:8000', body)
         .toPromise();
 
       return response;
@@ -50,20 +63,25 @@ export class ClassificationService {
     }
   }
 
-  async SaveClassificationToDb(user: any, response: any) {
+  async SaveClassificationToDb(user: User, fileName: string, dto: ResponseDto) {
     try {
       const classification = await this.prisma.classification.create({
         data: {
-          //fileName: response.filename,
-          fileName: 'output',
-          genre: response.data.genre,
-          genreDistribution: response.data.genreDistribution,
-          genreSequence: response.data.genreSequence,
+          fileName: fileName,
+          genre: dto.genre,
+          genreDistribution: dto.genreDistribution,
+          genreSequence: dto.genreSequence,
           userId: user.id,
         },
       });
 
-      return classification;
+      //append file url to the response
+      const classificationResponse = {
+        ...classification,
+        url: dto.fileName,
+      };
+
+      return classificationResponse;
     } catch (error) {
       //catch prisma error
       if (error instanceof PrismaClientKnownRequestError) {
