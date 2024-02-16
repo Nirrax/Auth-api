@@ -1,5 +1,10 @@
 import { HttpService } from '@nestjs/axios';
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import {
+  ForbiddenException,
+  HttpException,
+  HttpStatus,
+  Injectable,
+} from '@nestjs/common';
 import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
@@ -41,6 +46,13 @@ export class ClassificationService {
       dto.fileName,
       dto.tags,
     );
+
+    // something went wrong on with the python service
+    if (response.status != 200)
+      throw new HttpException(
+        'Validation failed',
+        HttpStatus.UNPROCESSABLE_ENTITY,
+      );
 
     const responseData = response.data;
 

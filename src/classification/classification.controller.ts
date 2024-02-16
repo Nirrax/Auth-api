@@ -24,6 +24,12 @@ export class ClassificationController {
     return this.classificationService.getClassifications(user);
   }
 
+  @Get('/download/:filename')
+  @Redirect('', 301)
+  downloadMp3(@Param('filename') fileName: string) {
+    return this.classificationService.downloadMp3(fileName);
+  }
+
   @Get(':id')
   getClassificationsById(
     @GetUser() user: User,
@@ -33,12 +39,6 @@ export class ClassificationController {
       user,
       classificationId,
     );
-  }
-
-  @Get('/download:filename')
-  @Redirect('', 301)
-  downloadMp3(@Param('filename') fileName: string) {
-    return this.classificationService.downloadMp3(fileName);
   }
 
   @Post()
