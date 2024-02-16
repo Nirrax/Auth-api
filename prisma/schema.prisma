@@ -33,6 +33,7 @@ model Classification {
   genre             String
   genreDistribution Json
   genreSequence     String[]
+  tags              Json
 
   userId Int
   user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
