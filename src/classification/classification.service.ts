@@ -36,7 +36,11 @@ export class ClassificationService {
 
   async classify(user: User, dto: ClassificationDto) {
     // send request to microservice
-    const response = await this.sendPostRequest(dto.base64Data, dto.fileName);
+    const response = await this.sendPostRequest(
+      dto.base64Data,
+      dto.fileName,
+      dto.tags,
+    );
 
     const responseData = response.data;
 
@@ -44,15 +48,16 @@ export class ClassificationService {
     const classification = await this.SaveClassificationToDb(
       user,
       dto.fileName,
+      dto.tags,
       responseData,
     );
 
     return classification;
   }
 
-  async sendPostRequest(base64Data: string, fileName: string) {
+  async sendPostRequest(base64Data: string, fileName: string, tags: object) {
     try {
-      const body = { base64Data: base64Data, fileName: fileName };
+      const body = { base64Data: base64Data, fileName: fileName, tags: tags };
       const response = await this.httpService
         .post('http://127.0.0.1:8000', body)
         .toPromise();
@@ -63,7 +68,12 @@ export class ClassificationService {
     }
   }
 
-  async SaveClassificationToDb(user: User, fileName: string, dto: ResponseDto) {
+  async SaveClassificationToDb(
+    user: User,
+    fileName: string,
+    tags: object,
+    dto: ResponseDto,
+  ) {
     try {
       const classification = await this.prisma.classification.create({
         data: {
@@ -71,6 +81,7 @@ export class ClassificationService {
           genre: dto.genre,
           genreDistribution: dto.genreDistribution,
           genreSequence: dto.genreSequence,
+          tags: tags,
           userId: user.id,
         },
       });
