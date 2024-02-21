@@ -9,12 +9,14 @@ import { User } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 import { ClassificationDto, ResponseDto } from './dto';
+import { ConfigService } from '@nestjs/config';
 
 @Injectable()
 export class ClassificationService {
   constructor(
     private prisma: PrismaService,
     private httpService: HttpService,
+    private config: ConfigService,
   ) {}
 
   getClassifications(user: User) {
@@ -53,7 +55,8 @@ export class ClassificationService {
   }
 
   async downloadMp3(fileName: string) {
-    const url = `http://localhost:8000/download/${fileName}`;
+    const apiUrl = this.config.get('FASTAPI_URL');
+    const url = `${apiUrl}/download/${fileName}`;
     return { url: url };
   }
 
@@ -65,11 +68,11 @@ export class ClassificationService {
       dto.tags,
     );
 
-    // something went wrong on with the python service
+    // something went wrong with the python service
     if (response.status != 200)
       throw new HttpException(
-        'Validation failed',
-        HttpStatus.UNPROCESSABLE_ENTITY,
+        'Service is temporalily inaccessible',
+        HttpStatus.SERVICE_UNAVAILABLE,
       );
 
     const responseData = response.data;
@@ -88,9 +91,8 @@ export class ClassificationService {
   async sendPostRequest(base64Data: string, fileName: string, tags: object) {
     try {
       const body = { base64Data: base64Data, fileName: fileName, tags: tags };
-      const response = await this.httpService
-        .post('http://127.0.0.1:8000', body)
-        .toPromise();
+      const url = this.config.get('FASTAPI_URL');
+      const response = await this.httpService.post(url, body).toPromise();
 
       return response;
     } catch (error) {
