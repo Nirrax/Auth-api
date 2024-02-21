@@ -34,6 +34,24 @@ export class ClassificationService {
     });
   }
 
+  async deleteClassificationById(user: User, classificationId: number) {
+    const classification = await this.prisma.classification.findUnique({
+      where: {
+        id: classificationId,
+      },
+    });
+
+    // check if classification belongs to the user
+    if (!classification || classification.userId !== user.id)
+      throw new ForbiddenException('Access to resources denied');
+
+    await this.prisma.classification.delete({
+      where: {
+        id: classificationId,
+      },
+    });
+  }
+
   async downloadMp3(fileName: string) {
     const url = `http://localhost:8000/download/${fileName}`;
     return { url: url };
