@@ -91,12 +91,13 @@ export class ClassificationService {
   async sendPostRequest(base64Data: string, fileName: string, tags: object) {
     try {
       const body = { base64Data: base64Data, fileName: fileName, tags: tags };
-      const url = this.config.get('FASTAPI_URL');
+      const url = this.config.get('FASTAPI_URL') + '/classify';
       const response = await this.httpService.post(url, body).toPromise();
 
       return response;
     } catch (error) {
-      console.error(error.message);
+      console.log(error);
+      return error;
     }
   }
 
