@@ -24,7 +24,7 @@
 
 ## Description
 
-Authorization server for Music genre classification project
+Authorization server for Music Genre Classification project
 
 ## Installation
 
