@@ -24,7 +24,8 @@
 
 ## Description
 
-Authorization server for Music Genre Classification project
+Authorization server for Music Genre Classification project  
+[Second repo for the project](https://github.com/Nirrax/mlModel-api)
 
 ## Installation
 
