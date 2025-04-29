@@ -9,7 +9,7 @@ describe('UserService', () => {
   const mockPrismaService = {
     user: {
       findMany: jest.fn(),
-      findOne: jest.fn(),
+      findUnique: jest.fn(),
       save: jest.fn(),
       delete: jest.fn(),
     },
@@ -117,6 +117,48 @@ describe('UserService', () => {
       expect(result.length).toBe(0);
       expect(result).toEqual(users);
       expect(mockPrismaService.user.findMany).toHaveBeenCalledTimes(3);
+    });
+  });
+
+  describe('getUser()', () => {
+    it('should return user with provided id', async () => {
+      // arrange
+      const id = 1;
+      const user = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'mail@mail.com',
+        passwordHash: '123',
+        firstName: '1name',
+        lastName: 'lastname',
+      } as User;
+
+      jest.spyOn(mockPrismaService.user, 'findUnique').mockReturnValue(user);
+
+      // act
+      const result = await userService.getUserById(id);
+
+      //assert
+      expect(result).toBeInstanceOf(Object);
+      expect(result.id).toEqual(id);
+      expect(result).toEqual(user);
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalled();
+      expect(mockPrismaService.user.findUnique).toHaveBeenLastCalledWith({
+        where: { id },
+      });
+    });
+
+    it('should return null because user with provided id does not exist', async () => {
+      // arrange
+      const id = 1;
+      jest.spyOn(mockPrismaService.user, 'findUnique').mockReturnValue(null);
+
+      // act
+      const result = await userService.getUserById(id);
+
+      // assert
+      expect(result).toBeNull();
     });
   });
 });
