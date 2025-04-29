@@ -32,7 +32,7 @@ describe('UserService', () => {
     expect(userService).toBeDefined();
   });
 
-  describe('getUsers()', () => {
+  describe('getUsers', () => {
     it('should return array of users', async () => {
       // arrange
       const users = [
@@ -120,7 +120,7 @@ describe('UserService', () => {
     });
   });
 
-  describe('getUser()', () => {
+  describe('getUserById', () => {
     it('should return user with provided id', async () => {
       // arrange
       const id = 1;
