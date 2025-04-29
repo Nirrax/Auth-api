@@ -3,6 +3,7 @@ import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
 import { EditUserDto } from './dto';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -194,6 +195,7 @@ describe('UserService', () => {
 
       // assert
       expect(result).toBeInstanceOf(Object);
+      expect(result).not.toHaveProperty('passwordHash');
       expect(result.email).toEqual(updateDto.email);
       expect(result.firstName).toEqual(updateDto.firstName);
       expect(result.lastName).toEqual(updateDto.lastName);
@@ -246,6 +248,7 @@ describe('UserService', () => {
 
       // assert
       expect(result).toBeInstanceOf(Object);
+      expect(result).not.toHaveProperty('passwordHash');
       expect(result.email).toEqual(updateDto.email);
       expect(result.firstName).toEqual(updateDto.firstName);
       expect(result.lastName).toEqual(user.lastName);
@@ -296,6 +299,7 @@ describe('UserService', () => {
 
       // assert
       expect(result).toBeInstanceOf(Object);
+      expect(result).not.toHaveProperty('passwordHash');
       expect(result.email).toEqual(updateDto.email);
       expect(result.firstName).toEqual(user.firstName);
       expect(result.lastName).toEqual(user.lastName);
@@ -343,9 +347,41 @@ describe('UserService', () => {
 
       // assert
       expect(result).toBeInstanceOf(Object);
+      expect(result).not.toHaveProperty('passwordHash');
       expect(result.email).toEqual(user.email);
       expect(result.firstName).toEqual(user.firstName);
       expect(result.lastName).toEqual(user.lastName);
+      expect(mockPrismaService.user.update).toHaveBeenCalled();
+      expect(mockPrismaService.user.update).toHaveBeenLastCalledWith({
+        data: {},
+        where: {
+          id: id,
+        },
+      });
+    });
+
+    it('should throw an error when user does not exist', async () => {
+      // arrange
+      const id = -1;
+      const updateDto = {} as EditUserDto;
+      jest.spyOn(mockPrismaService.user, 'update').mockRejectedValue(
+        new PrismaClientKnownRequestError('Record to update not found', {
+          code: 'P2025',
+          clientVersion: '4.x.x', // Use your actual Prisma version
+          meta: { target: ['User'] },
+        }),
+      );
+      //act & assert
+      await expect(userService.updateUserById(id, updateDto)).rejects.toThrow(
+        PrismaClientKnownRequestError,
+      );
+
+      await expect(
+        userService.updateUserById(id, updateDto),
+      ).rejects.toMatchObject({
+        code: 'P2025',
+      });
+
       expect(mockPrismaService.user.update).toHaveBeenCalled();
       expect(mockPrismaService.user.update).toHaveBeenLastCalledWith({
         data: {},
