@@ -391,4 +391,47 @@ describe('UserService', () => {
       });
     });
   });
+
+  describe('deleteUserById', () => {
+    it('should return null', async () => {
+      // arrange
+      const id = 1;
+      jest.spyOn(mockPrismaService.user, 'delete').mockReturnValue(null);
+
+      await userService.deleteUserById(id);
+
+      // act and assert
+      await expect(mockPrismaService.user.delete).toHaveBeenCalled();
+      await expect(mockPrismaService.user.delete).toHaveBeenCalledWith({
+        where: {
+          id: id,
+        },
+      });
+    });
+
+    it('should throw error when user does not exist', async () => {
+      // arrange
+      const id = -1;
+      jest.spyOn(mockPrismaService.user, 'delete').mockRejectedValue(
+        new PrismaClientKnownRequestError('Record to delete not found', {
+          code: 'P2025',
+          clientVersion: '4.x.x', // Use your actual Prisma version
+          meta: { target: ['User'] },
+        }),
+      );
+
+      // act and assert
+      await expect(userService.deleteUserById(id)).rejects.toThrow(
+        PrismaClientKnownRequestError,
+      );
+
+      expect(mockPrismaService.user.update).toHaveBeenCalled();
+      expect(mockPrismaService.user.update).toHaveBeenLastCalledWith({
+        data: {},
+        where: {
+          id: id,
+        },
+      });
+    });
+  });
 });
