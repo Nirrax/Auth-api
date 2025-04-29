@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from './user.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { User } from '@prisma/client';
+import { EditUserDto } from './dto';
 
 describe('UserService', () => {
   let userService: UserService;
@@ -10,7 +11,7 @@ describe('UserService', () => {
     user: {
       findMany: jest.fn(),
       findUnique: jest.fn(),
-      save: jest.fn(),
+      update: jest.fn(),
       delete: jest.fn(),
     },
   };
@@ -159,6 +160,199 @@ describe('UserService', () => {
 
       // assert
       expect(result).toBeNull();
+      expect(mockPrismaService.user.findUnique).toHaveBeenCalled();
+      expect(mockPrismaService.user.findUnique).toHaveBeenLastCalledWith({
+        where: { id },
+      });
+    });
+  });
+
+  describe('updateUserById', () => {
+    it('should return updated user when updateDto has 3 fields', async () => {
+      // arrange
+      const id = 1;
+      const updateDto = {
+        email: 'newemail@email.com',
+        firstName: 'newFirstName',
+        lastName: 'newLastName',
+      } as EditUserDto;
+
+      const updatedUser = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'newemail@email.com',
+        passwordHash: '123',
+        firstName: 'newFirstName',
+        lastName: 'newLastName',
+      } as User;
+
+      jest.spyOn(mockPrismaService.user, 'update').mockReturnValue(updatedUser);
+
+      // act
+      const result = await userService.updateUserById(id, updateDto);
+
+      // assert
+      expect(result).toBeInstanceOf(Object);
+      expect(result.email).toEqual(updateDto.email);
+      expect(result.firstName).toEqual(updateDto.firstName);
+      expect(result.lastName).toEqual(updateDto.lastName);
+      expect(mockPrismaService.user.update).toHaveBeenCalled();
+      expect(mockPrismaService.user.update).toHaveBeenLastCalledWith({
+        data: {
+          email: 'newemail@email.com',
+          firstName: 'newFirstName',
+          lastName: 'newLastName',
+        },
+        where: {
+          id: id,
+        },
+      });
+    });
+
+    it('should return updated user when updateDto has 2 fields', async () => {
+      // arrange
+      const id = 1;
+
+      const updateDto = {
+        email: 'newemail@email.com',
+        firstName: 'newFirstName',
+      } as EditUserDto;
+
+      const user = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'mail@mail.com',
+        passwordHash: '123',
+        firstName: '1name',
+        lastName: 'lastname',
+      } as User;
+
+      const updatedUser = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'newemail@email.com',
+        passwordHash: '123',
+        firstName: 'newFirstName',
+        lastName: 'lastname',
+      } as User;
+
+      jest.spyOn(mockPrismaService.user, 'update').mockReturnValue(updatedUser);
+
+      // act
+      const result = await userService.updateUserById(id, updateDto);
+
+      // assert
+      expect(result).toBeInstanceOf(Object);
+      expect(result.email).toEqual(updateDto.email);
+      expect(result.firstName).toEqual(updateDto.firstName);
+      expect(result.lastName).toEqual(user.lastName);
+      expect(mockPrismaService.user.update).toHaveBeenCalled();
+      expect(mockPrismaService.user.update).toHaveBeenLastCalledWith({
+        data: {
+          email: 'newemail@email.com',
+          firstName: 'newFirstName',
+        },
+        where: {
+          id: id,
+        },
+      });
+    });
+
+    it('should return updated user when updateDto has 1 field', async () => {
+      // arrange
+      const id = 1;
+
+      const updateDto = {
+        email: 'newemail@email.com',
+      } as EditUserDto;
+
+      const user = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'mail@mail.com',
+        passwordHash: '123',
+        firstName: '1name',
+        lastName: 'lastname',
+      } as User;
+
+      const updatedUser = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'newemail@email.com',
+        passwordHash: '123',
+        firstName: '1name',
+        lastName: 'lastname',
+      } as User;
+
+      jest.spyOn(mockPrismaService.user, 'update').mockReturnValue(updatedUser);
+
+      // act
+      const result = await userService.updateUserById(id, updateDto);
+
+      // assert
+      expect(result).toBeInstanceOf(Object);
+      expect(result.email).toEqual(updateDto.email);
+      expect(result.firstName).toEqual(user.firstName);
+      expect(result.lastName).toEqual(user.lastName);
+      expect(mockPrismaService.user.update).toHaveBeenCalled();
+      expect(mockPrismaService.user.update).toHaveBeenLastCalledWith({
+        data: {
+          email: 'newemail@email.com',
+        },
+        where: {
+          id: id,
+        },
+      });
+    });
+
+    it('should return updated user when updateDto is empty', async () => {
+      // arrange
+      const id = 1;
+
+      const updateDto = {} as EditUserDto;
+
+      const user = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'mail@mail.com',
+        passwordHash: '123',
+        firstName: '1name',
+        lastName: 'lastname',
+      } as User;
+
+      const updatedUser = {
+        id: 1,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+        email: 'mail@mail.com',
+        passwordHash: '123',
+        firstName: '1name',
+        lastName: 'lastname',
+      } as User;
+
+      jest.spyOn(mockPrismaService.user, 'update').mockReturnValue(updatedUser);
+
+      // act
+      const result = await userService.updateUserById(id, updateDto);
+
+      // assert
+      expect(result).toBeInstanceOf(Object);
+      expect(result.email).toEqual(user.email);
+      expect(result.firstName).toEqual(user.firstName);
+      expect(result.lastName).toEqual(user.lastName);
+      expect(mockPrismaService.user.update).toHaveBeenCalled();
+      expect(mockPrismaService.user.update).toHaveBeenLastCalledWith({
+        data: {},
+        where: {
+          id: id,
+        },
+      });
     });
   });
 });
