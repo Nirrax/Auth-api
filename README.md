@@ -24,7 +24,8 @@
 
 ## Description
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+Authorization server for Music Genre Classification project  
+[Second repo for the project](https://github.com/Nirrax/mlModel-api)
 
 ## Installation
 
